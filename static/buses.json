@@ -1,0 +1,32 @@
+{
+  "Bus 1": [
+    {"city": "Amritsar", "coord": [31.6340, 74.8723]},
+    {"city": "Batala", "coord": [31.8186, 75.2025]},
+    {"city": "Gurdaspur", "coord": [32.0419, 75.4053]},
+    {"city": "Pathankot", "coord": [32.2730, 75.6522]}
+  ],
+  "Bus 2": [
+    {"city": "Ludhiana", "coord": [30.9000, 75.8573]},
+    {"city": "Khanna", "coord": [30.7055, 76.2206]},
+    {"city": "Mandi Gobindgarh", "coord": [30.6746, 76.2912]},
+    {"city": "Fatehgarh Sahib", "coord": [30.6422, 76.3840]}
+  ],
+  "Bus 3": [
+    {"city": "Jalandhar", "coord": [31.3260, 75.5762]},
+    {"city": "Nakodar", "coord": [31.1275, 75.4750]},
+    {"city": "Shahkot", "coord": [31.0823, 75.3379]},
+    {"city": "Phillaur", "coord": [31.0184, 75.7911]}
+  ],
+  "Bus 4": [
+    {"city": "Patiala", "coord": [30.3398, 76.3869]},
+    {"city": "Rajpura", "coord": [30.4786, 76.5941]},
+    {"city": "Nabha", "coord": [30.3758, 76.1521]},
+    {"city": "Samana", "coord": [30.1570, 76.1970]}
+  ],
+  "Bus 5": [
+    {"city": "Barnala", "coord": [30.3745, 75.5477]},
+    {"city": "Dhuri", "coord": [30.3684, 75.8690]},
+    {"city": "Sangrur", "coord": [30.2451, 75.8420]},
+    {"city": "Sunam", "coord": [30.1286, 75.7994]}
+  ]
+}

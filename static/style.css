@@ -1,0 +1,347 @@
+/* --- Search Bar Container --- */
+#search-container {
+    position: absolute;           /* Positions the search bar absolutely */
+    top: 10px;                    /* Distance from the top */
+    left: 75%;                    /* Position from the left */
+    transform: translateX(-50%);  /* Center horizontally at 75% */
+    display: flex;                /* Align children in a row */
+    align-items: center;          /* Vertically center children */
+    z-index: 1000;                /* Layer above most elements */
+    transition: all 0.3s;         /* Smooth transition for all properties */
+}
+
+/* --- Search Input (Collapsed by Default) --- */
+#search {
+    width: 0;                     /* Hidden by default */
+    padding: 0;
+    border: none;
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    font-size: 1rem;
+    outline: none;
+    transition: width 0.3s, padding 0.3s; /* Smooth expand/collapse */
+}
+
+/* --- Search Icon --- */
+#search-icon {
+    font-size: 30px;
+    cursor: pointer;
+    background: #fff;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    margin-right: 8px;
+}
+
+/* --- Close Icon (Hidden by Default) --- */
+#close-icon {
+    font-size: 24px;
+    cursor: pointer;
+    display: none;                /* Hidden initially */
+    margin-left: -30px;
+}
+
+/* --- Expanded Search Input --- */
+#search-container.expanded #search {
+    width: 320px;                 /* Expanded width */
+    padding: 12px 20px;           /* Expanded padding */
+}
+
+#search-container.expanded #close-icon {
+    display: block;               /* Show close icon when expanded */
+}
+
+
+/* Search input collapsed by default */
+#search {
+  width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  font-size: 1rem;
+  outline: none;
+  transition: width 0.3s, padding 0.3s;
+}
+
+/* Search icon */
+#search-icon {
+  font-size: 30px;
+  cursor: pointer;
+  background: #fff;
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  margin-right: 8px;
+}
+
+/* Close icon hidden by default */
+#close-icon {
+  font-size: 24px;
+  cursor: pointer;
+  display: none;
+  margin-left: -30px;
+}
+
+/* Expanded input */
+#search-container.expanded #search {
+  width: 320px;
+  padding: 12px 20px;
+}
+
+#search-container.expanded #close-icon {
+  display: block;
+}
+
+#search-container.expanded #search-icon {
+  display: none;
+}
+
+/* Container for movable hamburger */
+#hamburger-container {
+  position: absolute;
+  top: 70px;  /* adjust as needed */
+  left: 20px; /* adjust as needed */
+  z-index: 10000; /* above everything else */
+}
+
+/* Hamburger icon */
+#hamburger {
+  width: 35px;
+  height: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+#hamburger span {
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Menu styling */
+#menu {
+  display: none;
+  flex-direction: column;
+  margin-top: 10px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+#menu a {
+  text-decoration: none;
+  color: #333;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+#menu a:hover {
+  background: #007bff;
+  color: #fff;
+}
+
+/* Hamburger animation when active */
+#hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(7px, 7px);
+}
+
+#hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+#hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+#menu.show {
+  display: flex;
+}
+
+#results{
+  font-size:3rem;
+  z-index: 10000;
+}
+
+#buses-panel {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    transition: left 0.4s ease;
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#buses-panel.show {
+    left: 0;
+}
+
+#buses-panel-content {
+    background: #fff;
+    width: 80%;
+    max-width: 800px;
+    height: 80%;
+    padding: 20px;
+    border-radius: 10px;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+#close-buses-panel {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.bus-block {
+    background: #f1f1f1;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 8px;
+    transition: transform 0.3s;
+}
+
+.bus-block:hover {
+    transform: scale(1.03);
+    background: #e0f7fa;
+}
+
+.bus-stop {
+    padding: 3px 5px;
+    margin: 2px 0;
+    border-radius: 4px;
+    background: #c8e6c9;
+}
+/* Complaints Panel */
+#complaints-panel {
+    position: fixed;
+    top: 50%;
+    left: -400px; /* Start hidden off-screen */
+    transform: translateY(-50%);
+    width: 350px;
+    height: 400px;
+    background: #f1f1f1;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    transition: all 0.5s ease;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+}
+
+#complaints-panel h2 {
+    margin-top: 0;
+    font-family: Arial, sans-serif;
+}
+
+#complaints-panel input,
+#complaints-panel textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+#complaints-panel textarea {
+    height: 200px;
+    resize: none;
+}
+
+#complaints-panel button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: #4caf50;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+#complaints-panel button:hover {
+    background: #45a049;
+}
+
+#complaint-status {
+    margin-top: 10px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+}
+
+/* Active state: panel visible */
+#complaints-panel.active {
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+/* About overlay uses the same base overlay styles */
+#aboutOverlay .overlay-content {
+  background: #fafafa;
+  border-radius: 10px;
+  max-width: 600px;
+  margin: 50px auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+/* Sliding Window Base */
+.slide-window {
+  position: fixed;
+  top: 0;
+  right: -100%; /* Start hidden off screen */
+  width: 60%;
+  max-width: 600px;
+  height: 100%;
+  background: #fff;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.3);
+  transition: right 0.4s ease-in-out;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+}
+
+.slide-window.active {
+  right: 0; /* Slide into view */
+}
+
+/* Window header */
+.window-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #333;
+  color: #fff;
+  font-size: 18px;
+}
+
+.close-btn {
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.window-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+

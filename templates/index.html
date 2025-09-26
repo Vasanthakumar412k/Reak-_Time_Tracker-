@@ -1,0 +1,316 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Admin Dashboard — Live Vehicles</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { margin:0; font-family: Arial, Helvetica, sans-serif; }
+        #map { height: 90vh; width: 100%; }
+        header { padding: 10px; background: #333; color: #fff; font-size: 18px; text-align: center; }
+    </style>
+</head>
+
+<body>
+    <div id="hamburger-container">
+        <div id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <nav id="menu">
+            <a href="#" id="available-buses-link">Available Buses</a>
+            <a href="#complaints" id="complaints-menu">Complaints</a>
+            <a href="#" id="aboutBtn">About</a>
+            <a href="#">Logout</a>
+        </nav> </div>
+
+    <header>TRANSIT EASE</header>
+
+    <div id="search-container">
+        <div id="search-icon">&#128269;</div>
+        <input type="text" id="search" placeholder="Search vehicle or driver..." />
+        <div id="close-icon">&times;</div>
+        <div id="search-results" style="position:absolute; top:60px; left:20px; width:250px; max-height:300px; overflow-y:auto; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.3); display:none; z-index:1000;"></div>
+    </div>
+    
+    <div id="buses-panel">
+        <div id="buses-panel-content">
+            <span id="close-buses-panel">&times;</span>
+            <h2>Available Buses</h2>
+            <div id="buses-list"></div>
+        </div>
+    </div>
+
+    <div id="complaints-panel">
+        <h2>📬 Send a Complaint</h2>
+        <input id="complaint-subject" type="text" placeholder="Subject">
+        <textarea id="complaint-message" placeholder="Type your complaint..."></textarea>
+        <button id="send-complaint">Send</button>
+        <div id="complaint-status"></div>
+    </div>
+
+    <div class="slide-window" id="aboutWindow">
+        <div class="window-header">
+            <span>About</span>
+            <span class="close-btn" id="closeAbout">&times;</span>
+        </div>
+        <div class="window-body">
+            <h2>Real-Time Bus Information System</h2>
+            <p>
+              This project provides live bus tracking, available routes, and stop timings
+              in an interactive map dashboard.
+            </p>
+            <h3>Developer Team: HackOps</h3>
+            <p>We are a team of 6 passionate developers building smart solutions for transport systems.</p>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // --- Element References ---
+        const searchContainer = document.getElementById("search-container");
+        const searchIcon = document.getElementById("search-icon");
+        const closeIcon = document.getElementById("close-icon");
+        const searchInput = document.getElementById("search");
+        const resultsContainer = document.getElementById("search-results");
+        const hamburger = document.getElementById("hamburger");
+        const menu = document.getElementById("menu");
+        const aboutBtn = document.getElementById("aboutBtn");
+        const aboutWindow = document.getElementById("aboutWindow");
+        const closeAbout = document.getElementById("closeAbout");
+        const busesPanel = document.getElementById("buses-panel");
+        const busesList = document.getElementById("buses-list");
+        const openBusesLink = document.getElementById("available-buses-link");
+        const closeBusesPanel = document.getElementById("close-buses-panel");
+        const complaintsPanel = document.getElementById("complaints-panel");
+        const complaintsMenu = document.getElementById("complaints-menu");
+
+        // --- Map Initialization ---
+        const indiaBounds = [
+            [6.5, 68.0],
+            [35.5, 97.5]
+        ];
+        const map = L.map('map', {
+            center: [22.0, 80.0],
+            zoom: 5,
+            minZoom: 4,
+            maxZoom: 10,
+            zoomControl: false,
+            maxBounds: indiaBounds,
+            maxBoundsViscosity: 0.8
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        L.control.zoom({ position: 'topright' }).addTo(map);
+        
+        // --- Marker Styles & Storage ---
+        let buses_data = {};
+        const liveMarkers = {}; // Object to store markers by bus name
+        const defaultStyle = { radius: 10, color: '#3388ff', fillColor: '#3388ff', fillOpacity: 0.7 };
+        const highlightStyle = { radius: 10, color: 'red', fillColor: 'red', fillOpacity: 0.9 };
+        
+        // --- Bus Data & Marker Creation ---
+        fetch('/static/buses.json')
+            .then(response => response.json())
+            .then(data => {
+                buses_data = data;
+                console.log("Bus data loaded:", buses_data);
+                
+                // Create a marker for each bus in the data file
+                for (const busName in buses_data) {
+                    // All markers start at a default location until live data is received
+                    liveMarkers[busName] = L.circleMarker([28.6139, 77.2090], defaultStyle)
+                        .addTo(map)
+                        .bindPopup(busName);
+                }
+            })
+            .catch(err => console.error("Error loading buses.json:", err));
+
+        // --- UI Event Listeners ---
+        
+        aboutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            aboutWindow.classList.add("active");
+        });
+        closeAbout.addEventListener("click", () => {
+            aboutWindow.classList.remove("active");
+        });
+
+        searchIcon?.addEventListener("click", () => {
+            searchContainer.classList.add("expanded");
+            searchInput.focus();
+        });
+
+        closeIcon?.addEventListener("click", () => {
+            searchContainer.classList.remove("expanded");
+            searchInput.value = "";
+            resultsContainer.style.display = "none";
+        });
+
+        hamburger?.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            menu.classList.toggle("show");
+        });
+        
+        // --- Search Functionality (MODIFIED) ---
+        searchInput.addEventListener("input", () => {
+            const query = searchInput.value.toLowerCase();
+            resultsContainer.innerHTML = "";
+
+            if (!query || Object.keys(buses_data).length === 0) {
+                resultsContainer.style.display = "none";
+                return;
+            }
+
+            let hasResults = false;
+            for (const [bus, stops] of Object.entries(buses_data)) {
+                // Case 1: query matches bus name
+                if (bus.toLowerCase().includes(query)) {
+                    hasResults = true;
+                    const item = document.createElement("div");
+                    item.style.cssText = "display: flex; align-items: center; padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #eee;";
+                    
+                    const circle = document.createElement("div");
+                    circle.style.cssText = "width: 12px; height: 12px; border-radius: 50%; background-color: #2196f3; margin-right: 10px;";
+                    
+                    const text = document.createElement("div");
+                    text.innerHTML = `<strong>${bus}</strong> - Entire route`;
+
+                    item.append(circle, text);
+                    
+                    // MODIFIED CLICK EVENT
+                    item.addEventListener("click", () => {
+                        if (stops.length > 0) {
+                            map.setView(stops[0].coord, 10);
+                        }
+                        resultsContainer.style.display = "none";
+                        
+                        // 1. Reset all markers to the default blue color
+                        Object.values(liveMarkers).forEach(marker => marker.setStyle(defaultStyle));
+                        
+                        // 2. Highlight the selected bus marker in red
+                        const selectedMarker = liveMarkers[bus];
+                        if (selectedMarker) {
+                            selectedMarker.setStyle(highlightStyle).bringToFront();
+                        }
+                    });
+                    resultsContainer.appendChild(item);
+                }
+
+                // Case 2: query matches stop city (no change here)
+                stops.forEach(stop => {
+                    if (stop.city.toLowerCase().includes(query)) {
+                        hasResults = true;
+                        const etaMinutes = Math.floor(Math.random() * 20 + 5);
+                        const item = document.createElement("div");
+                        item.style.cssText = "display: flex; align-items: center; padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #eee;";
+                        
+                        const circle = document.createElement("div");
+                        circle.style.cssText = "width: 12px; height: 12px; border-radius: 50%; background-color: #4caf50; margin-right: 10px;";
+                        
+                        const text = document.createElement("div");
+                        text.innerHTML = `<strong>${bus}</strong> - ${stop.city} (ETA: ${etaMinutes} min)`;
+
+                        item.append(circle, text);
+                        item.addEventListener("click", () => {
+                            map.setView(stop.coord, 12);
+                            resultsContainer.style.display = "none";
+                        });
+                        resultsContainer.appendChild(item);
+                    }
+                });
+            }
+            resultsContainer.style.display = hasResults ? "block" : "none";
+        });
+        
+        // --- Panels (Available Buses, Complaints) ---
+        // (No changes to the logic in these sections)
+        openBusesLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            busesList.innerHTML = "";
+            for (const [bus, stops] of Object.entries(buses_data)) {
+                const busDiv = document.createElement("div");
+                busDiv.classList.add("bus-block");
+                const busTitle = document.createElement("h3");
+                busTitle.textContent = bus;
+                busDiv.appendChild(busTitle);
+                stops.forEach((stop, index) => {
+                    const stopDiv = document.createElement("div");
+                    stopDiv.classList.add("bus-stop");
+                    const eta = Math.floor(Math.random() * 20 + 5);
+                    stopDiv.textContent = `${index + 1}. ${stop.city} - ETA: ${eta} min`;
+                    busDiv.appendChild(stopDiv);
+                });
+                busesList.appendChild(busDiv);
+            }
+            busesPanel.classList.add("show");
+        });
+        closeBusesPanel.addEventListener("click", () => {
+            busesPanel.classList.remove("show");
+        });
+        complaintsMenu?.addEventListener("click", (e) => {
+            e.preventDefault();
+            complaintsPanel.classList.add("active");
+        });
+        document.addEventListener("click", (e) => {
+            if (!complaintsPanel.contains(e.target) && e.target !== complaintsMenu) {
+                complaintsPanel.classList.remove("active");
+            }
+        });
+        document.getElementById("send-complaint").addEventListener("click", () => {
+            const subject = document.getElementById("complaint-subject").value;
+            const message = document.getElementById("complaint-message").value;
+            const status = document.getElementById("complaint-status");
+            if (!subject || !message) {
+                status.innerText = "Please fill both fields.";
+                return;
+            }
+            fetch('/save_complaint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject, message })
+            })
+            .then(res => res.json())
+            .then(data => {
+                status.innerText = data.status;
+                document.getElementById("complaint-subject").value = "";
+                document.getElementById("complaint-message").value = "";
+                setTimeout(() => {
+                    complaintsPanel.classList.remove("active");
+                }, 1000);
+            })
+            .catch(err => console.error(err));
+        });
+
+        // --- Live Marker Data Update (MODIFIED) ---
+        function updateValue() {
+            fetch('/get_value')
+                .then(response => response.json())
+                .then(data => {
+                    // This assumes your backend returns data that matches the bus names.
+                    // E.g., for 5 buses named Bus1, Bus2, etc. in your JSON.
+                    const busKeys = Object.keys(liveMarkers);
+                    if (busKeys[0] && liveMarkers[busKeys[0]]) liveMarkers[busKeys[0]].setLatLng([data.value1, data.value2]);
+                    if (busKeys[1] && liveMarkers[busKeys[1]]) liveMarkers[busKeys[1]].setLatLng([data.value3, data.value4]);
+                    if (busKeys[2] && liveMarkers[busKeys[2]]) liveMarkers[busKeys[2]].setLatLng([data.value5, data.value6]);
+                    if (busKeys[3] && liveMarkers[busKeys[3]]) liveMarkers[busKeys[3]].setLatLng([data.value7, data.value8]);
+                    if (busKeys[4] && liveMarkers[busKeys[4]]) liveMarkers[busKeys[4]].setLatLng([data.value9, data.value10]);
+                })
+                .catch(error => console.error('Error fetching live data:', error));
+        }
+
+        setInterval(updateValue, 1000);
+    });
+</script>
+</body>
+</html>
